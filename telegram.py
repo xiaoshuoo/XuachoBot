@@ -207,17 +207,23 @@ SUPPORTED_LANGUAGES = {
     "ko": "🇰🇷 한국어"
 }
 
-# Загружаем перем����������нные из .env файла
+# Загружаем переменные из .env файла
 load_dotenv()
 
-# Получаем токен из переменных окружения
+# Получаем токен из переменных окружения с более информативными сообщениями об ошибках
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 if not TELEGRAM_TOKEN:
-    raise ValueError("Telegram token not found in environment variables")
+    logger.error("TELEGRAM_TOKEN not found in environment variables")
+    raise ValueError("Please set TELEGRAM_TOKEN environment variable")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
-    raise ValueError("Gemini API key not found in environment variables")
+    logger.error("GEMINI_API_KEY not found in environment variables")
+    raise ValueError("Please set GEMINI_API_KEY environment variable")
+
+# Добавим логирование для отладки
+logger.info("Environment variables loaded successfully")
+logger.info(f"Using PORT: {os.getenv('PORT', '10000')}")
 
 # Настройка логирования
 logging.basicConfig(
