@@ -58,7 +58,7 @@ from io import BytesIO
 import base64
 import time
 import gc
-from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.base import BaseSession
 
 # В начале файла после импортов добавим:
 # Константы для авторизации
@@ -229,9 +229,7 @@ logger = logging.getLogger(__name__)
 # Инициализация бота и диспетчера
 bot = Bot(
     token=TELEGRAM_TOKEN,
-    default=DefaultBotProperties(
-        parse_mode=ParseMode.MARKDOWN_V2
-    )
+    parse_mode=ParseMode.MARKDOWN_V2  # Используем это вместо default
 )
 dp = Dispatcher(storage=MemoryStorage())
 
@@ -2297,40 +2295,19 @@ async def setup():
 async def main() -> None:
     """Основная функция запуска бота"""
     try:
-        # Инициализируем бота с правильными настройками
-        bot = Bot(
-            token=TELEGRAM_TOKEN,
-            default=DefaultBotProperties(
-                parse_mode=ParseMode.MARKDOWN_V2
-            )
+        # Получаем порт из переменной окружения
+        port = int(os.environ.get("PORT", 10000))
+        
+        # Настраиваем веб-сервер для работы с вебхуками
+        dp.startup.register(setup)
+        
+        # Запускаем бота
+        await dp.start_polling(
+            bot,
+            allowed_updates=dp.resolve_used_update_types(),
+            close_bot_session=True
         )
         
-        # Создаем диспетчер
-        dp = Dispatcher(storage=MemoryStorage())
-        
-        # Настраиваем middleware
-        setup_middlewares(dp)
-        
-        # Подключаем роутер
-        dp.include_router(router)
-        
-        # Устанавливаем команды бота
-        await bot.set_my_commands(setup_bot_commands())
-        
-        # Запускаем поллинг
-        try:
-            logger.info("Bot started")
-            await dp.start_polling(
-                bot,
-                allowed_updates=dp.resolve_used_update_types(),
-                close_bot_session=True
-            )
-        except Exception as e:
-            logger.error(f"Polling error: {e}")
-        finally:
-            if bot.session:
-                await bot.session.close()
-            
     except Exception as e:
         logger.error(f"Startup error: {e}")
         raise
