@@ -235,9 +235,12 @@ logger = logging.getLogger(__name__)
 # Инициализация бота и диспетчера
 bot = Bot(
     token=TELEGRAM_TOKEN,
-    parse_mode=ParseMode.MARKDOWN_V2  # Используем это вместо default
+    parse_mode=ParseMode.MARKDOWN_V2
 )
-dp = Dispatcher(storage=MemoryStorage())
+dp = Dispatcher()
+
+# Регистрируем роутеры
+dp.include_router(router)
 
 # Создаем основной роутер
 router = Router(name="main_router")
